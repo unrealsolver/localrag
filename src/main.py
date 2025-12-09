@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 
 from git import Repo
@@ -25,44 +24,6 @@ PERSIST_DIR = Path("../.llamaindex_storage")  # local metadata
 QDRANT_URL = "http://localhost:6334"
 QDRANT_COLLECTION_NAME = "git_repo_index"
 
-# Ignore typical junk (you can customize)
-DEFAULT_EXCLUDE_DIRS = {
-    ".git",
-    ".idea",
-    ".vscode",
-    "__pycache__",
-    "node_modules",
-    "dist",
-    "build",
-    "experiemnts",
-    ".local_kafka",
-    ".venv",
-    ".local_storage",
-}
-
-DEFAULT_EXTENSIONS = {
-    ".py",
-    ".ts",
-    ".tsx",
-    ".js",
-    ".jsx",
-    ".java",
-    ".kt",
-    ".kts",
-    ".go",
-    ".rs",
-    ".c",
-    ".cpp",
-    ".h",
-    ".hpp",
-    ".md",
-    ".txt",
-    ".yaml",
-    ".yml",
-    ".toml",
-    "Makefile",
-}
-
 qa_prompt_tmpl = PromptTemplate(
     """You are a strict documentation assistant.
 You can ONLY answer using the information in the provided context.
@@ -84,9 +45,8 @@ Settings.llm = Ollama(
 
 Settings.embed_model = HuggingFaceEmbedding(model_name="BAAI/bge-small-en-v1.5")
 
+
 # ---------- HELPERS ----------
-
-
 def ensure_repo_clean_or_warn(repo_path: Path) -> None:
     """Just confirm it's a git repo and optionally warn about uncommitted changes."""
     repo = Repo(repo_path)
@@ -94,20 +54,16 @@ def ensure_repo_clean_or_warn(repo_path: Path) -> None:
         print("[WARN] Repo has uncommitted changes; they will still be indexed.")
 
 
-def list_files_for_index(root: Path) -> list[Path]:
-    """Collect files to index based on extension + exclusions."""
-    files: list[Path] = []
-    for dirpath, dirnames, filenames in os.walk(root):
-        # filter out excluded directories
-        dirnames[:] = [d for d in dirnames if d not in DEFAULT_EXCLUDE_DIRS]
+def list_files_for_index(repo_root: Path) -> list[Path]:
+    repo = Repo(repo_path)
 
-        for fn in filenames:
-            p = Path(dirpath) / fn
-            if p.suffix.lower() in DEFAULT_EXTENSIONS:
-                files.append(p)
-
-    print(f"[INFO] Collected {len(files)} files for indexing.")
-    return files
+    # -c  = cached (tracked)
+    # -o  = others (untracked, but not ignored)
+    # --exclude-standard = respect .gitignore, .git/info/exclude, global ignores
+    files_rel = repo.git.ls_files("-co", "--exclude-standard").splitlines()
+    files_abs = [repo_root / p for p in files_rel]
+    print(f"[INFO] Collected {len(files_abs)} files for indexing.")
+    return files_abs
 
 
 # ---------- MAIN INDEXING LOGIC ----------
