@@ -1,4 +1,5 @@
 import shutil
+import fnmatch
 from pathlib import Path
 
 from git import Repo
@@ -37,6 +38,8 @@ Context:
 
 Answer briefly and do NOT write code unless explicitly asked."""
 )
+
+EXCLUDE_PATTERNS = ["*.lock", "package-lock.json"]
 
 Settings.llm = Ollama(
     model="llama3.2",  # name as exposed by Ollama
@@ -86,7 +89,14 @@ def list_files_for_index(repo_root: Path) -> list[Path]:
     # -o  = others (untracked, but not ignored)
     # --exclude-standard = respect .gitignore, .git/info/exclude, global ignores
     files_rel = repo.git.ls_files("-co", "--exclude-standard").splitlines()
-    files_abs = [repo_root / p for p in files_rel]
+
+    files_rel_filtered = [
+        fname
+        for fname in files_rel
+        if not any((fnmatch.fnmatch(fname, pattern) for pattern in EXCLUDE_PATTERNS))
+    ]
+
+    files_abs = [repo_root / p for p in files_rel_filtered]
     print(f"[INFO] Collected {len(files_abs)} files for indexing.")
     return files_abs
 
@@ -167,7 +177,7 @@ def interactive_query(index: VectorStoreIndex) -> None:
         print("\n----- ANSWER -----")
         for token in resp.response_gen:
             print(token, end="", flush=True)
-        print("------------------\n")
+        print("\n------------------\n")
 
 
 if __name__ == "__main__":
