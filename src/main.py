@@ -16,9 +16,9 @@ from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.vector_stores.qdrant import QdrantVectorStore
 from qdrant_client import QdrantClient
 
-from cli import parse_args
+from cli import CLIArgs, parse_args
 
-DEBUG = False
+args: CLIArgs
 
 PERSIST_DIR = Path("../.llamaindex_storage")  # local metadata
 
@@ -158,7 +158,7 @@ def interactive_query(index: VectorStoreIndex) -> None:
             break
         resp = query_engine.query(q)
 
-        if DEBUG:
+        if args.debug:
             for i, n in enumerate(resp.source_nodes, 1):
                 print(f"\n--- Source {i} | score={n.score} ---")
                 print(n.metadata.get("file_path", "no path"))

@@ -9,6 +9,7 @@ class CLIArgs(argparse.Namespace):
     llm: str
     em: str
     reindex: bool
+    debug: bool
 
 
 def existing_dir(path_str: str) -> Path:
@@ -51,6 +52,13 @@ def build_parser() -> argparse.ArgumentParser:
         "-r",
         "--reindex",
         help="Force reindex repo",
+        action="store_true",
+    )
+
+    parser.add_argument(
+        "-d",
+        "--debug",
+        help="Debug mode",
         action="store_true",
     )
 
