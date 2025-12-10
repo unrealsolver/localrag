@@ -8,6 +8,7 @@ class CLIArgs(argparse.Namespace):
     path: Path
     llm: str
     em: str
+    reindex: bool
 
 
 def existing_dir(path_str: str) -> Path:
@@ -44,6 +45,13 @@ def build_parser() -> argparse.ArgumentParser:
         metavar="EMBED_MODEL",
         help="Override the default embedding model name.",
         default="BAAI/bge-small-en-v1.5",
+    )
+
+    parser.add_argument(
+        "-r",
+        "--reindex",
+        help="Force reindex repo",
+        action="store_true",
     )
 
     return parser

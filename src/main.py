@@ -1,3 +1,4 @@
+import shutil
 from pathlib import Path
 
 from git import Repo
@@ -26,7 +27,7 @@ QDRANT_COLLECTION_NAME = "git_repo_index"
 
 qa_prompt_tmpl = PromptTemplate(
     """You are a strict documentation assistant.
-You can ONLY answer using the information in the provided context.
+You should STRONGLY answer using the information in the provided context.
 If the answer is not clearly in the context, say exactly: "I don't know."
 
 Question: {query_str}
@@ -38,12 +39,36 @@ Answer briefly and do NOT write code unless explicitly asked."""
 )
 
 Settings.llm = Ollama(
-    model="llama3.2:1b",  # name as exposed by Ollama
+    model="llama3.2",  # name as exposed by Ollama
     base_url="http://localhost:11434",  # default Ollama endpoint
     request_timeout=300.0,  # seconds
 )
 
 Settings.embed_model = HuggingFaceEmbedding(model_name="BAAI/bge-small-en-v1.5")
+
+
+_qdrant_client = None
+
+
+def get_qdrant_client():
+    global _qdrant_client
+    if _qdrant_client is None:
+        _qdrant_client = QdrantClient(url=QDRANT_URL, prefer_grpc=True)
+    return _qdrant_client
+
+
+_qdrant_vector_store = None
+
+
+def get_qdrant_vector_store():
+    global _qdrant_vector_store
+    if _qdrant_vector_store is None:
+        client = get_qdrant_client()
+        _qdrant_vector_store = QdrantVectorStore(
+            client=client,
+            collection_name=QDRANT_COLLECTION_NAME,
+        )
+    return _qdrant_vector_store
 
 
 # ---------- HELPERS ----------
@@ -67,12 +92,6 @@ def list_files_for_index(repo_root: Path) -> list[Path]:
 
 
 # ---------- MAIN INDEXING LOGIC ----------
-def get_qdrant_vector_store() -> QdrantVectorStore:
-    client = QdrantClient(url=QDRANT_URL, prefer_grpc=True)
-    return QdrantVectorStore(
-        client=client,
-        collection_name=QDRANT_COLLECTION_NAME,
-    )
 
 
 def read_documents(repo_path):
@@ -157,6 +176,14 @@ if __name__ == "__main__":
     repo_path = args.path.resolve()
     if not repo_path.exists():
         raise SystemExit(f"Repo path does not exist: {repo_path}")
+
+    if args.reindex:
+        # Wipe state
+        if PERSIST_DIR.exists():
+            shutil.rmtree(PERSIST_DIR)
+
+        q_client = get_qdrant_client()
+        q_client.delete_collection(QDRANT_COLLECTION_NAME)
 
     documents = read_documents(repo_path)
     index = build_or_load_index(documents)
