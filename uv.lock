@@ -1803,6 +1803,7 @@ dependencies = [
 [package.dev-dependencies]
 dev = [
     { name = "prek" },
+    { name = "pytest" },
 ]
 
 [package.metadata]
@@ -1818,7 +1819,10 @@ requires-dist = [
 ]
 
 [package.metadata.requires-dev]
-dev = [{ name = "prek", specifier = ">=0.2.21" }]
+dev = [
+    { name = "prek", specifier = ">=0.2.21" },
+    { name = "pytest", specifier = ">=9.0.2" },
+]
 
 [[package]]
 name = "regex"

@@ -1,8 +1,6 @@
 import shutil
-import fnmatch
 from pathlib import Path
 
-from git import Repo
 
 from llama_index.core import (
     PromptTemplate,
@@ -18,6 +16,7 @@ from llama_index.vector_stores.qdrant import QdrantVectorStore
 from qdrant_client import QdrantClient
 
 from cli import CLIArgs, parse_args
+from repo_extract import ensure_repo_clean_or_warn, list_files_for_index
 
 args: CLIArgs
 
@@ -39,7 +38,6 @@ Context:
 Answer briefly and do NOT write code unless explicitly asked."""
 )
 
-EXCLUDE_PATTERNS = ["*.lock", "package-lock.json"]
 
 Settings.llm = Ollama(
     model="llama3.2",  # name as exposed by Ollama
@@ -74,46 +72,7 @@ def get_qdrant_vector_store():
     return _qdrant_vector_store
 
 
-# ---------- HELPERS ----------
-def ensure_repo_clean_or_warn(repo_path: Path) -> None:
-    """Just confirm it's a git repo and optionally warn about uncommitted changes."""
-    repo = Repo(repo_path)
-    if repo.is_dirty():
-        print("[WARN] Repo has uncommitted changes; they will still be indexed.")
-
-
-def list_files_for_index(repo_root: Path) -> list[Path]:
-    repo = Repo(repo_path)
-
-    # -c  = cached (tracked)
-    # -o  = others (untracked, but not ignored)
-    # --exclude-standard = respect .gitignore, .git/info/exclude, global ignores
-    files_rel = repo.git.ls_files("-co", "--exclude-standard").splitlines()
-
-    files_rel_filtered = [
-        fname
-        for fname in files_rel
-        if not any((fnmatch.fnmatch(fname, pattern) for pattern in EXCLUDE_PATTERNS))
-    ]
-
-    files_abs = [repo_root / p for p in files_rel_filtered]
-    print(f"[INFO] Collected {len(files_abs)} files for indexing.")
-    return files_abs
-
-
 # ---------- MAIN INDEXING LOGIC ----------
-
-
-def read_documents(repo_path):
-    # 1. (Optional) sanity check repo
-    ensure_repo_clean_or_warn(repo_path)
-
-    # 2. Collect files to index
-    files = list_files_for_index(repo_path)
-
-    # 3. Use LlamaIndex file reader
-    #    You can pass file paths directly; SimpleDirectoryReader will just load them.
-    return SimpleDirectoryReader(input_files=[str(f) for f in files]).load_data()
 
 
 def build_index(documents) -> VectorStoreIndex:
@@ -195,6 +154,8 @@ if __name__ == "__main__":
         q_client = get_qdrant_client()
         q_client.delete_collection(QDRANT_COLLECTION_NAME)
 
-    documents = read_documents(repo_path)
+    ensure_repo_clean_or_warn(repo_path)
+    files = list_files_for_index(repo_path)
+    documents = SimpleDirectoryReader(input_files=[str(f) for f in files]).load_data()
     index = build_or_load_index(documents)
     interactive_query(index)
