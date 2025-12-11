@@ -1,13 +1,34 @@
 from dataclasses import dataclass
 import fnmatch
 from pathlib import Path
-from typing import Callable
 
 from git import Repo
 
 
 # Garbage that poisons RAG
-EXCLUDE_PATTERNS = ["*.lock", "*/package-lock.json"]
+EXCLUDE_PATTERNS = ["*.ipynb", "*.lock", "*/package-lock.json"]
+EXT_TO_LANG = {
+    "py": "python",
+    "ts": "typescript",
+    "tsx": "typescript",
+    "js": "javascript",
+    "jsx": "javascript",
+    "java": "java",
+    "go": "go",
+    "rs": "rust",
+    "cpp": "cpp",
+    "cc": "cpp",
+    "cxx": "cpp",
+    "c": "c",
+    "cs": "csharp",
+    "kt": "kotlin",
+    "kts": "kotlin",
+    "json": "json",
+    "toml": "toml",
+    "yaml": "yaml",
+    "yml": "yaml",
+    "md": "markdown",
+}
 
 textchars = bytearray({7, 8, 9, 10, 12, 13, 27} | set(range(0x20, 0x100)) - {0x7F})
 
@@ -29,6 +50,15 @@ class IndexableFile:
     def ext(self) -> str:
         "file extension"
         return str(self.rel).split(".")[-1]
+
+    def read(self):
+        with open(self.abs, "rt") as fd:
+            return fd.read()
+
+    @property
+    def lang(self):
+        "file language"
+        return EXT_TO_LANG.get(self.ext, None)
 
 
 def is_binary_string(chunk: bytes):

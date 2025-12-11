@@ -10,6 +10,7 @@ from llama_index.core import (
     SimpleDirectoryReader,
     load_index_from_storage,
 )
+from llama_index.core.schema import BaseNode
 from llama_index.llms.ollama import Ollama
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.vector_stores.qdrant import QdrantVectorStore
@@ -17,6 +18,7 @@ from qdrant_client import QdrantClient
 
 from cli import CLIArgs, parse_args
 from repo_extract import ensure_repo_clean_or_warn, list_files_for_index
+from chunking import chunk
 
 args: CLIArgs
 
@@ -75,13 +77,13 @@ def get_qdrant_vector_store():
 # ---------- MAIN INDEXING LOGIC ----------
 
 
-def build_index(documents) -> VectorStoreIndex:
+def build_index(nodes: list[BaseNode]) -> VectorStoreIndex:
     vector_store = get_qdrant_vector_store()
     storage_context = StorageContext.from_defaults(
         vector_store=vector_store,
     )
-    index = VectorStoreIndex.from_documents(
-        documents,
+    index = VectorStoreIndex(
+        nodes,
         storage_context=storage_context,
         show_progress=True,
     )
@@ -100,16 +102,16 @@ def load_existing_index() -> VectorStoreIndex:
     return index
 
 
-def build_or_load_index(documents=None) -> VectorStoreIndex:
+def build_or_load_index(nodes: list[BaseNode]) -> VectorStoreIndex:
     if PERSIST_DIR.exists():
         # assumes Qdrant collection still exists too
         print("[INFO] Loading existing index...")
         return load_existing_index()
     else:
-        if documents is None:
+        if len(nodes) == 0:
             raise ValueError("Need documents on first run to build index.")
         print("[INFO] Building index for the first time...")
-        return build_index(documents)
+        return build_index(nodes)
 
 
 def interactive_query(index: VectorStoreIndex) -> None:
@@ -130,8 +132,9 @@ def interactive_query(index: VectorStoreIndex) -> None:
         if args.debug:
             for i, n in enumerate(resp.source_nodes, 1):
                 print(f"\n--- Source {i} | score={n.score} ---")
-                print(n.metadata.get("file_path", "no path"))
-                print(n.text[:600])
+                print(n.metadata)
+                lines = n.text.split("\n")
+                print("\n".join(lines[:3] + ["…"] + lines[-3:]))
 
         print("\n----- ANSWER -----")
         for token in resp.response_gen:
@@ -156,8 +159,6 @@ if __name__ == "__main__":
 
     ensure_repo_clean_or_warn(repo_path)
     files = list_files_for_index(repo_path)
-    documents = SimpleDirectoryReader(
-        input_files=[str(f.abs) for f in files]
-    ).load_data()
-    index = build_or_load_index(documents)
+    nodes = chunk(files)
+    index = build_or_load_index(nodes)
     interactive_query(index)
