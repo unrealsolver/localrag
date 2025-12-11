@@ -1,5 +1,7 @@
+from dataclasses import dataclass
 import fnmatch
 from pathlib import Path
+from typing import Callable
 
 from git import Repo
 
@@ -8,6 +10,25 @@ from git import Repo
 EXCLUDE_PATTERNS = ["*.lock", "*/package-lock.json"]
 
 textchars = bytearray({7, 8, 9, 10, 12, 13, 27} | set(range(0x20, 0x100)) - {0x7F})
+
+
+@dataclass
+class IndexableFile:
+    root: Path
+    "file root"
+
+    rel: Path
+    "relative path"
+
+    @property
+    def abs(self) -> Path:
+        "absolute path"
+        return self.root / self.rel
+
+    @property
+    def ext(self) -> str:
+        "file extension"
+        return str(self.rel).split(".")[-1]
 
 
 def is_binary_string(chunk: bytes):
@@ -22,31 +43,27 @@ def ensure_repo_clean_or_warn(repo_path: Path) -> None:
 
 
 def is_file_excluded(file_path: Path):
-    return any(
-        fnmatch.fnmatch(file_path.as_posix(), pattern) for pattern in EXCLUDE_PATTERNS
-    )
+    return any(fnmatch.fnmatch(str(file_path), pattern) for pattern in EXCLUDE_PATTERNS)
 
 
 def is_file_binary(file_path: Path):
+    assert file_path.is_absolute()
     with open(file_path, "rb") as fd:
         return is_binary_string(fd.read(1024))
 
 
-def list_files_for_index(repo_root: Path) -> list[Path]:
+def list_files_for_index(repo_root: Path) -> list[IndexableFile]:
     repo = Repo(repo_root)
 
     # -c  = cached (tracked)
     # -o  = others (untracked, but not ignored)
     # --exclude-standard = respect .gitignore, .git/info/exclude, global ignores
-    files_rel = [
-        Path(d) for d in repo.git.ls_files("-co", "--exclude-standard").splitlines()
-    ]
+    git_files = repo.git.ls_files("-co", "--exclude-standard").splitlines()
+    files = [IndexableFile(rel=d, root=repo_root) for d in git_files]
 
-    files_rel = filter(lambda d: not is_file_excluded(d), files_rel)
+    files = filter(lambda d: not is_file_excluded(d.rel), files)
+    files = filter(lambda d: not is_file_binary(d.abs), files)
+    files = list(files)
 
-    files_abs = [repo_root / p for p in files_rel]
-
-    files_abs = filter(lambda d: not is_file_binary(d), files_abs)
-    files_abs = list(files_abs)
-    print(f"[INFO] Collected {len(files_abs)} files for indexing.")
-    return files_abs
+    print(f"[INFO] Collected {len(files)} files for indexing.")
+    return files

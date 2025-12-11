@@ -156,6 +156,8 @@ if __name__ == "__main__":
 
     ensure_repo_clean_or_warn(repo_path)
     files = list_files_for_index(repo_path)
-    documents = SimpleDirectoryReader(input_files=[str(f) for f in files]).load_data()
+    documents = SimpleDirectoryReader(
+        input_files=[str(f.abs) for f in files]
+    ).load_data()
     index = build_or_load_index(documents)
     interactive_query(index)
