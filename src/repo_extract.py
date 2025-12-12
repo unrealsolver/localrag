@@ -89,7 +89,7 @@ def list_files_for_index(repo_root: Path) -> list[IndexableFile]:
     # -o  = others (untracked, but not ignored)
     # --exclude-standard = respect .gitignore, .git/info/exclude, global ignores
     git_files = repo.git.ls_files("-co", "--exclude-standard").splitlines()
-    files = [IndexableFile(rel=d, root=repo_root) for d in git_files]
+    files = [IndexableFile(rel=Path(d), root=repo_root) for d in git_files]
 
     files = filter(lambda d: not is_file_excluded(d.rel), files)
     files = filter(lambda d: not is_file_binary(d.abs), files)
