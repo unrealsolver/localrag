@@ -6,7 +6,7 @@ from git import Repo
 
 
 # Garbage that poisons RAG
-EXCLUDE_PATTERNS = ["*.ipynb", "*.lock", "*/package-lock.json"]
+EXCLUDE_PATTERNS = ["*.ipynb", "*.lock", "package-lock.json"]
 EXT_TO_LANG = {
     "py": "python",
     "ts": "typescript",
@@ -73,7 +73,7 @@ def ensure_repo_clean_or_warn(repo_path: Path) -> None:
 
 
 def is_file_excluded(file_path: Path):
-    return any(fnmatch.fnmatch(str(file_path), pattern) for pattern in EXCLUDE_PATTERNS)
+    return any(fnmatch.fnmatch(file_path.name, pattern) for pattern in EXCLUDE_PATTERNS)
 
 
 def is_file_binary(file_path: Path):

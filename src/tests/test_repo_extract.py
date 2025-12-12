@@ -8,7 +8,9 @@ from ..repo_extract import is_file_excluded
     "path,is_filtered",
     [
         ["src/package-lock.json", True],
+        ["package-lock.json", True],
         ["src/uv.lock", True],
+        ["uv.lock", True],
         ["src/poetry.lock", True],
         ["src/package.json", False],
         ["src/pyproject.toml", False],
