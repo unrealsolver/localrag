@@ -5,6 +5,7 @@ description = "Locally indexes git repo and runs llm"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "colored>=2.3.1",
     "gitpython>=3.1.45",
     "llama-index-core>=0.14.10",
     "llama-index-embeddings-huggingface>=0.6.1",

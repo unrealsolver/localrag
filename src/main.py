@@ -7,7 +7,6 @@ from llama_index.core import (
     VectorStoreIndex,
     StorageContext,
     Settings,
-    SimpleDirectoryReader,
     load_index_from_storage,
 )
 from llama_index.core.schema import BaseNode
@@ -19,6 +18,7 @@ from qdrant_client import QdrantClient
 from cli import CLIArgs, parse_args
 from repo_extract import ensure_repo_clean_or_warn, list_files_for_index
 from chunking import chunk
+from util import format_context_node
 
 args: CLIArgs
 
@@ -131,10 +131,7 @@ def interactive_query(index: VectorStoreIndex) -> None:
 
         if args.debug:
             for i, n in enumerate(resp.source_nodes, 1):
-                print(f"\n--- Source {i} | score={n.score} ---")
-                print(n.metadata)
-                lines = n.text.split("\n")
-                print("\n".join(lines[:3] + ["…"] + lines[-3:]))
+                format_context_node(n, i)
 
         print("\n----- ANSWER -----")
         for token in resp.response_gen:
