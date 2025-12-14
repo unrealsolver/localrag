@@ -12,6 +12,7 @@ from ..repo_extract import is_file_excluded
         ["src/uv.lock", True],
         ["uv.lock", True],
         ["src/poetry.lock", True],
+        ["src/tests/test_something.py", True],
         ["src/package.json", False],
         ["src/pyproject.toml", False],
     ],

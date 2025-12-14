@@ -102,12 +102,14 @@ def load_existing_index() -> VectorStoreIndex:
     return index
 
 
-def build_or_load_index(nodes: list[BaseNode]) -> VectorStoreIndex:
+def build_or_load_index(repo_path: Path) -> VectorStoreIndex:
     if PERSIST_DIR.exists():
         # assumes Qdrant collection still exists too
         print("[INFO] Loading existing index...")
         return load_existing_index()
     else:
+        files = list_files_for_index(repo_path)
+        nodes = chunk(files)
         if len(nodes) == 0:
             raise ValueError("Need documents on first run to build index.")
         print("[INFO] Building index for the first time...")
@@ -155,7 +157,5 @@ if __name__ == "__main__":
         q_client.delete_collection(QDRANT_COLLECTION_NAME)
 
     ensure_repo_clean_or_warn(repo_path)
-    files = list_files_for_index(repo_path)
-    nodes = chunk(files)
-    index = build_or_load_index(nodes)
+    index = build_or_load_index(repo_path)
     interactive_query(index)

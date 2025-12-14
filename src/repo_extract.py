@@ -6,7 +6,7 @@ from git import Repo
 
 
 # Garbage that poisons RAG
-EXCLUDE_PATTERNS = ["*.ipynb", "*.lock", "package-lock.json"]
+EXCLUDE_PATTERNS = ["*.ipynb", "*.lock", "package-lock.json", "test_*"]
 EXT_TO_LANG = {
     "py": "python",
     "ts": "typescript",
@@ -69,7 +69,7 @@ def ensure_repo_clean_or_warn(repo_path: Path) -> None:
     """Just confirm it's a git repo and optionally warn about uncommitted changes."""
     repo = Repo(repo_path)
     if repo.is_dirty():
-        print("[WARN] Repo has uncommitted changes; they will still be indexed.")
+        print("[WARN] Repo has uncommitted changes; they will still might be indexed.")
 
 
 def is_file_excluded(file_path: Path):
