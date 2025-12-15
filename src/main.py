@@ -1,3 +1,4 @@
+import logging
 import shutil
 from pathlib import Path
 
@@ -16,9 +17,12 @@ from llama_index.vector_stores.qdrant import QdrantVectorStore
 from qdrant_client import QdrantClient
 
 from cli import CLIArgs, parse_args
-from repo_extract import ensure_repo_clean_or_warn, list_files_for_index
+from repo_extract import ensure_repo_clean_or_warn, is_git_repo, list_files_for_index
 from chunking import chunk
 from util import format_context_node
+
+
+logger = logging.getLogger(__name__)
 
 args: CLIArgs
 
@@ -155,6 +159,10 @@ if __name__ == "__main__":
 
         q_client = get_qdrant_client()
         q_client.delete_collection(QDRANT_COLLECTION_NAME)
+
+    if not is_git_repo(repo_path):
+        logger.error("Provided path contain no git repository")
+        exit(1)
 
     ensure_repo_clean_or_warn(repo_path)
     index = build_or_load_index(repo_path)

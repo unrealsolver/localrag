@@ -72,6 +72,17 @@ def ensure_repo_clean_or_warn(repo_path: Path) -> None:
         print("[WARN] Repo has uncommitted changes; they will still might be indexed.")
 
 
+def is_git_repo(path: str | Path) -> bool:
+    "Checks if the path is a git repo"
+    p = Path(path)
+    git = p / ".git"
+    if git.is_dir():
+        return True
+    if git.is_file():  # worktree/submodule case: .git contains "gitdir: ..."
+        return git.read_text(errors="ignore").startswith("gitdir:")
+    return False
+
+
 def is_file_excluded(file_path: Path):
     return any(fnmatch.fnmatch(file_path.name, pattern) for pattern in EXCLUDE_PATTERNS)
 
