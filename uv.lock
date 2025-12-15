@@ -859,6 +859,53 @@ wheels = [
 ]
 
 [[package]]
+name = "localrag"
+version = "0.1.0"
+source = { editable = "." }
+dependencies = [
+    { name = "colored" },
+    { name = "gitpython" },
+    { name = "llama-index-core" },
+    { name = "llama-index-embeddings-huggingface" },
+    { name = "llama-index-embeddings-ollama" },
+    { name = "llama-index-llms-ollama" },
+    { name = "llama-index-readers-file" },
+    { name = "llama-index-vector-stores-qdrant" },
+    { name = "qdrant-client" },
+    { name = "tqdm" },
+    { name = "tree-sitter" },
+    { name = "tree-sitter-language-pack" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "prek" },
+    { name = "pytest" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "colored", specifier = ">=2.3.1" },
+    { name = "gitpython", specifier = ">=3.1.45" },
+    { name = "llama-index-core", specifier = ">=0.14.10" },
+    { name = "llama-index-embeddings-huggingface", specifier = ">=0.6.1" },
+    { name = "llama-index-embeddings-ollama", specifier = ">=0.8.4" },
+    { name = "llama-index-llms-ollama", specifier = ">=0.9.0" },
+    { name = "llama-index-readers-file", specifier = ">=0.5.5" },
+    { name = "llama-index-vector-stores-qdrant", specifier = ">=0.9.0" },
+    { name = "qdrant-client", specifier = ">=1.16.1" },
+    { name = "tqdm", specifier = ">=4.67.1" },
+    { name = "tree-sitter", specifier = ">=0.25.2" },
+    { name = "tree-sitter-language-pack", specifier = ">=0.13.0" },
+]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "prek", specifier = ">=0.2.21" },
+    { name = "pytest", specifier = ">=9.0.2" },
+]
+
+[[package]]
 name = "markupsafe"
 version = "3.0.3"
 source = { registry = "https://pypi.org/simple" }
@@ -1792,53 +1839,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/d9/68/fec3816a223c0b73b0e0036460be45c61ce2770ffb9197ac371e4f615ddc/qdrant_client-1.16.1.tar.gz", hash = "sha256:676c7c10fd4d4cb2981b8fcb32fd764f5f661b04b7334d024034d07212f971fd", size = 332130, upload-time = "2025-11-25T04:31:54.212Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/60/e2/60a20d04b0595c641516463168909c5bbcc192d3d6eacb637c1677109c6a/qdrant_client-1.16.1-py3-none-any.whl", hash = "sha256:1eefe89f66e8a468ba0de1680e28b441e69825cfb62e8fb2e457c15e24ce5e3b", size = 378481, upload-time = "2025-11-25T04:31:52.629Z" },
-]
-
-[[package]]
-name = "raglocal"
-version = "0.1.0"
-source = { virtual = "." }
-dependencies = [
-    { name = "colored" },
-    { name = "gitpython" },
-    { name = "llama-index-core" },
-    { name = "llama-index-embeddings-huggingface" },
-    { name = "llama-index-embeddings-ollama" },
-    { name = "llama-index-llms-ollama" },
-    { name = "llama-index-readers-file" },
-    { name = "llama-index-vector-stores-qdrant" },
-    { name = "qdrant-client" },
-    { name = "tqdm" },
-    { name = "tree-sitter" },
-    { name = "tree-sitter-language-pack" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "prek" },
-    { name = "pytest" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "colored", specifier = ">=2.3.1" },
-    { name = "gitpython", specifier = ">=3.1.45" },
-    { name = "llama-index-core", specifier = ">=0.14.10" },
-    { name = "llama-index-embeddings-huggingface", specifier = ">=0.6.1" },
-    { name = "llama-index-embeddings-ollama", specifier = ">=0.8.4" },
-    { name = "llama-index-llms-ollama", specifier = ">=0.9.0" },
-    { name = "llama-index-readers-file", specifier = ">=0.5.5" },
-    { name = "llama-index-vector-stores-qdrant", specifier = ">=0.9.0" },
-    { name = "qdrant-client", specifier = ">=1.16.1" },
-    { name = "tqdm", specifier = ">=4.67.1" },
-    { name = "tree-sitter", specifier = ">=0.25.2" },
-    { name = "tree-sitter-language-pack", specifier = ">=0.13.0" },
-]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "prek", specifier = ">=0.2.21" },
-    { name = "pytest", specifier = ">=9.0.2" },
 ]
 
 [[package]]

@@ -1,5 +1,9 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
-name = "raglocal"
+name = "localrag"
 version = "0.1.0"
 description = "Locally indexes git repo and runs llm"
 readme = "README.md"
@@ -24,3 +28,9 @@ dev = [
     "prek>=0.2.21",
     "pytest>=9.0.2",
 ]
+
+[project.scripts]
+localrag = "localrag.main:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/localrag"]

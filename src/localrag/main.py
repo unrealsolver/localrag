@@ -16,10 +16,14 @@ from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.vector_stores.qdrant import QdrantVectorStore
 from qdrant_client import QdrantClient
 
-from cli import CLIArgs, parse_args
-from repo_extract import ensure_repo_clean_or_warn, is_git_repo, list_files_for_index
-from chunking import chunk
-from util import format_context_node
+from localrag.cli import CLIArgs, parse_args
+from localrag.repo_extract import (
+    ensure_repo_clean_or_warn,
+    is_git_repo,
+    list_files_for_index,
+)
+from localrag.chunking import chunk
+from localrag.util import format_context_node
 
 
 logger = logging.getLogger(__name__)
@@ -154,7 +158,7 @@ def interactive_query(index: VectorStoreIndex) -> None:
             exit(0)
 
 
-if __name__ == "__main__":
+def main():
     args = parse_args()
 
     repo_path = args.path.resolve()
@@ -176,3 +180,7 @@ if __name__ == "__main__":
     ensure_repo_clean_or_warn(repo_path)
     index = build_or_load_index(repo_path)
     interactive_query(index)
+
+
+if __name__ == "__main__":
+    main()

@@ -3,7 +3,7 @@ from tqdm import tqdm
 from llama_index.core import Document
 from llama_index.core.node_parser import CodeSplitter, SentenceSplitter
 from llama_index.core.schema import BaseNode, MetadataMode
-from repo_extract import IndexableFile
+from localrag.repo_extract import IndexableFile
 
 
 logger = logging.getLogger(__name__)
