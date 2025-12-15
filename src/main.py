@@ -120,6 +120,11 @@ def build_or_load_index(repo_path: Path) -> VectorStoreIndex:
         return build_index(nodes)
 
 
+def teardown():
+    # TODO
+    ...
+
+
 def interactive_query(index: VectorStoreIndex) -> None:
     print("\n[INFO] Enter interactive query mode. Type 'exit' to quit.\n")
     query_engine = index.as_query_engine(
@@ -130,19 +135,23 @@ def interactive_query(index: VectorStoreIndex) -> None:
     )
 
     while True:
-        q = input("Query> ").strip()
-        if not q or q.lower() in {"exit", "quit"}:
-            break
-        resp = query_engine.query(q)
+        try:
+            q = input("Query> ").strip()
+            if not q or q.lower() in {"exit", "quit"}:
+                break
+            resp = query_engine.query(q)
 
-        if args.debug:
-            for i, n in enumerate(resp.source_nodes, 1):
-                format_context_node(n, i)
+            if args.debug:
+                for i, n in enumerate(resp.source_nodes, 1):
+                    format_context_node(n, i)
 
-        print("\n----- ANSWER -----")
-        for token in resp.response_gen:
-            print(token, end="", flush=True)
-        print("\n------------------\n")
+            print("\n----- ANSWER -----")
+            for token in resp.response_gen:
+                print(token, end="", flush=True)
+            print("\n------------------\n")
+        except (EOFError, KeyboardInterrupt):
+            teardown()
+            exit(0)
 
 
 if __name__ == "__main__":
