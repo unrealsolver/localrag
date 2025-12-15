@@ -14,6 +14,7 @@ dependencies = [
     "llama-index-readers-file>=0.5.5",
     "llama-index-vector-stores-qdrant>=0.9.0",
     "qdrant-client>=1.16.1",
+    "tqdm>=4.67.1",
     "tree-sitter>=0.25.2",
     "tree-sitter-language-pack>=0.13.0",
 ]

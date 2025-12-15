@@ -1,4 +1,5 @@
 import logging
+from tqdm import tqdm
 from llama_index.core import Document
 from llama_index.core.node_parser import CodeSplitter, SentenceSplitter
 from llama_index.core.schema import BaseNode, MetadataMode
@@ -37,27 +38,26 @@ def assign_line_ranges(doc: Document, nodes: list[BaseNode]):
 
 def chunk(files: list[IndexableFile]) -> list[BaseNode]:
     nodes = []
-    for idx, file in enumerate(files):
-        print(file.rel, ":", idx, "/", len(files))
-
+    pbar = tqdm(total=len(files))
+    for file in files:
+        pbar.set_description(f"Indexing {file.rel}")
         doc = Document(
             text=file.read(),
             extra_info={"path": file.rel, "lang": file.lang or "generic"},
         )
 
         if (lang := file.lang) is not None:
-            print("code", lang)
             cs = CodeSplitter(
                 language=lang, chunk_lines=80, chunk_lines_overlap=20, max_chars=1500
             )
             new_nodes = cs.get_nodes_from_documents([doc])
-            for n in new_nodes:
-                n.metadata
         else:
-            print("text")
             sp = SentenceSplitter(chunk_overlap=20)
             new_nodes = sp.get_nodes_from_documents([doc])
         assign_line_ranges(doc, new_nodes)
-        print("added", len(new_nodes))
         nodes += new_nodes
+        pbar.update()
+    pbar.close()
+    print(f"[INFO] Total files: {len(files)}")
+    print(f"[INFO] Total chunks: {len(nodes)}")
     return nodes
