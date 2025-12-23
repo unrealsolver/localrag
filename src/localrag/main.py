@@ -159,6 +159,7 @@ def interactive_query(index: VectorStoreIndex) -> None:
 
 
 def main():
+    global args
     args = parse_args()
 
     repo_path = args.path.resolve()
